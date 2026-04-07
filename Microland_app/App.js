@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet
 } from "react-native";
-
+import { COLORS } from "./theme/colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import ChatScreen from "./screens/ChatScreen";
@@ -73,7 +73,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f7f9fc"
+    backgroundColor: COLORS.background
   },
 
   content: {
@@ -86,9 +86,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
     paddingTop: 10,
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.card,
     borderTopWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: COLORS.border,
     elevation: 10
   },
 
@@ -97,13 +97,13 @@ const styles = StyleSheet.create({
   },
 
   navText: {
-    color: "#777",
+    color: COLORS.subText,
     fontSize: 13,
     fontWeight: "500"
   },
 
   activeText: {
-    color: "#0f62fe",
+    color: COLORS.primary,
     fontWeight: "700"
   },
 
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     height: 3,
     width: 20,
-    backgroundColor: "#0f62fe",
+    backgroundColor: COLORS.primary,
     borderRadius: 2
   }
 });

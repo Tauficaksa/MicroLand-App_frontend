@@ -1,44 +1,119 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet
+} from "react-native";
+import { COLORS } from "../theme/colors";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "../services/api";
 import SectionTitle from "../components/SectionTitle";
 
 export default function HistoryScreen() {
   const [data, setData] = useState({ symptoms: [], recentMessages: [] });
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     api.getHistory().then(setData).catch(() => {});
   }, []);
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <SectionTitle>Patient History</SectionTitle>
+    <FlatList
+      data={[{ type: "symptoms" }, { type: "messages" }]} // 👈 single list trick
+      keyExtractor={(item, index) => index.toString()}
 
-      <Text style={subTitle}>Top Symptoms</Text>
-      <FlatList
-        data={data.symptoms}
-        keyExtractor={(item, index) => `${item.symptom_name}-${index}`}
-        renderItem={({ item }) => (
-          <View style={cardStyle}>
-            <Text>{item.symptom_name} - {item.count}</Text>
-          </View>
-        )}
-      />
+      ListHeaderComponent={
+        <View style={styles.container}>
+          <SectionTitle>Patient History</SectionTitle>
+        </View>
+      }
 
-      <Text style={subTitle}>Recent Messages</Text>
-      <FlatList
-        data={data.recentMessages}
-        keyExtractor={(item, index) => `${item.created_at}-${index}`}
-        renderItem={({ item }) => (
-          <View style={cardStyle}>
-            <Text style={{ fontWeight: "700" }}>{item.sender}</Text>
-            <Text>{item.message_text}</Text>
-          </View>
-        )}
-      />
-    </View>
+      renderItem={({ item }) => {
+        if (item.type === "symptoms") {
+          return (
+            <View>
+              <Text style={styles.subTitle}>Top Symptoms</Text>
+
+              {data.symptoms.map((symptom, index) => (
+                <View key={index} style={styles.card}>
+                  <Text style={styles.text}>
+                    {symptom.symptom_name}
+                  </Text>
+                  <Text style={styles.count}>
+                    {symptom.count} times
+                  </Text>
+                </View>
+              ))}
+            </View>
+          );
+        }
+
+        if (item.type === "messages") {
+          return (
+            <View>
+              <Text style={styles.subTitle}>Recent Messages</Text>
+
+              {data.recentMessages.map((msg, index) => (
+                <View key={index} style={styles.card}>
+                  <Text style={styles.sender}>{msg.sender}</Text>
+                  <Text style={styles.message}>{msg.message_text}</Text>
+                </View>
+              ))}
+            </View>
+          );
+        }
+
+        return null;
+      }}
+
+      contentContainerStyle={{
+        padding: 16,
+        paddingBottom: insets.bottom + 20 // ✅ SAFE AREA FIX
+      }}
+    />
   );
 }
 
-const subTitle = { fontSize: 18, fontWeight: "700", marginTop: 12, marginBottom: 8 };
-const cardStyle = { backgroundColor: "#f3f5f8", padding: 12, borderRadius: 10, marginBottom: 10 };
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 10
+  },
+
+  subTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginTop: 12,
+    marginBottom: 8,
+    color: COLORS.text
+  },
+
+  card: {
+    backgroundColor: COLORS.card,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 10,
+    elevation: 2
+  },
+
+  text: {
+    fontSize: 15,
+    color: COLORS.text
+  },
+
+  count: {
+    marginTop: 4,
+    color: COLORS.primary,
+    fontWeight: "600"
+  },
+
+  sender: {
+    fontWeight: "700",
+    color: COLORS.primary
+  },
+
+  message: {
+    marginTop: 4,
+    color: COLORS.subText
+  }
+});

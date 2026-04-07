@@ -1,5 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  ScrollView
+} from "react-native";
+import { COLORS } from "../theme/colors";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "../services/api";
 import SectionTitle from "../components/SectionTitle";
 
@@ -9,6 +22,8 @@ export default function AppointmentsScreen() {
   const [appointmentDate, setAppointmentDate] = useState("");
   const [notes, setNotes] = useState("");
   const [appointments, setAppointments] = useState([]);
+
+  const insets = useSafeAreaInsets();
 
   const load = async () => {
     try {
@@ -30,32 +45,135 @@ export default function AppointmentsScreen() {
   };
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <SectionTitle>Appointments</SectionTitle>
-      <TextInput placeholder="Doctor name" value={doctorName} onChangeText={setDoctorName} style={inputStyle} />
-      <TextInput placeholder="Specialty" value={specialty} onChangeText={setSpecialty} style={inputStyle} />
-      <TextInput placeholder="Date time (YYYY-MM-DD HH:MM:SS)" value={appointmentDate} onChangeText={setAppointmentDate} style={inputStyle} />
-      <TextInput placeholder="Notes" value={notes} onChangeText={setNotes} style={inputStyle} />
-      <TouchableOpacity style={btnStyle} onPress={add}><Text style={btnTextStyle}>Book Appointment</Text></TouchableOpacity>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <View style={{ flex: 1 }}>
+        
+        <FlatList
+          data={appointments}
+          keyExtractor={(item) => String(item.id)}
+          ListHeaderComponent={
+            <View style={styles.container}>
+              <SectionTitle>Appointments</SectionTitle>
 
-      <FlatList
-        data={appointments}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
-          <View style={cardStyle}>
-            <Text style={titleStyle}>{item.doctor_name}</Text>
-            <Text>{item.specialty}</Text>
-            <Text>{String(item.appointment_date)}</Text>
-            <Text>{item.notes}</Text>
-          </View>
-        )}
-      />
-    </View>
+              {/* Form Card */}
+              <View style={styles.formCard}>
+                <TextInput
+                  placeholder="Doctor name"
+                  value={doctorName}
+                  onChangeText={setDoctorName}
+                  style={styles.input}
+                />
+                <TextInput
+                  placeholder="Specialty"
+                  value={specialty}
+                  onChangeText={setSpecialty}
+                  style={styles.input}
+                />
+                <TextInput
+                  placeholder="Date (YYYY-MM-DD HH:MM)"
+                  value={appointmentDate}
+                  onChangeText={setAppointmentDate}
+                  style={styles.input}
+                />
+                <TextInput
+                  placeholder="Notes"
+                  value={notes}
+                  onChangeText={setNotes}
+                  style={styles.input}
+                />
+
+                <TouchableOpacity style={styles.button} onPress={add}>
+                  <Text style={styles.buttonText}>Book Appointment</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          }
+
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Text style={styles.title}>{item.doctor_name}</Text>
+              <Text style={styles.subtitle}>{item.specialty}</Text>
+              <Text style={styles.date}>{String(item.appointment_date)}</Text>
+              {item.notes ? <Text style={styles.notes}>{item.notes}</Text> : null}
+            </View>
+          )}
+
+          contentContainerStyle={{
+            padding: 16,
+            paddingBottom: insets.bottom + 20 // ✅ FIX for bottom overlap
+          }}
+        />
+
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
-const inputStyle = { borderWidth: 1, borderColor: "#c8d3e1", borderRadius: 10, padding: 10, marginBottom: 10 };
-const btnStyle = { backgroundColor: "#0f62fe", padding: 12, borderRadius: 10, alignItems: "center", marginBottom: 12 };
-const btnTextStyle = { color: "#fff", fontWeight: "700" };
-const cardStyle = { backgroundColor: "#f3f5f8", padding: 12, borderRadius: 10, marginBottom: 10 };
-const titleStyle = { fontWeight: "700", fontSize: 16 };
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 10
+  },
+
+  formCard: {
+    backgroundColor: COLORS.card,
+    padding: 15,
+    borderRadius: 15,
+    elevation: 3,
+    marginBottom: 15
+  },
+
+  input: {
+    backgroundColor: COLORS.input,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+    color: COLORS.text
+  },
+
+  button: {
+    backgroundColor: COLORS.primary,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 5
+  },
+
+  buttonText: {
+    color: COLORS.card,
+    fontWeight: "700",
+    fontSize: 15
+  },
+
+  card: {
+    backgroundColor: COLORS.card,
+    padding: 15,
+    borderRadius: 15,
+    marginBottom: 12,
+    elevation: 2
+  },
+
+  title: {
+    fontWeight: "700",
+    fontSize: 16,
+    color: COLORS.text
+  },
+
+  subtitle: {
+    color: COLORS.subText,
+    marginTop: 2
+  },
+
+  date: {
+    color: COLORS.primary,
+    marginTop: 4,
+    fontWeight: "600"
+  },
+
+  notes: {
+    marginTop: 6,
+    color: COLORS.subText
+  }
+});
