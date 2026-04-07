@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { SafeAreaView, StatusBar, View, Text, TouchableOpacity } from "react-native";
+import {
+  SafeAreaView,
+  StatusBar,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet
+} from "react-native";
+
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import ChatScreen from "./screens/ChatScreen";
 import AppointmentsScreen from "./screens/AppointmentsScreen";
@@ -9,8 +18,15 @@ import InsightsScreen from "./screens/InsightsScreen";
 
 export default function App() {
   const [tab, setTab] = useState("chat");
+  const insets = useSafeAreaInsets();
 
-  const tabs = ["chat", "appointments", "medications", "history", "insights"];
+  const tabs = [
+    { key: "chat", label: "Chat" },
+    { key: "appointments", label: "Appointments" },
+    { key: "medications", label: "Meds" },
+    { key: "history", label: "History" },
+    { key: "insights", label: "Insights" }
+  ];
 
   const renderScreen = () => {
     if (tab === "appointments") return <AppointmentsScreen />;
@@ -21,29 +37,81 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, marginTop: StatusBar.currentHeight || 0, backgroundColor: "#fff" }}>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "center", padding: 10, gap: 8 }}>
-        {tabs.map((item) => (
-          <TouchableOpacity
-            key={item}
-            onPress={() => setTab(item)}
-            style={{
-              backgroundColor: tab === item ? "#0f62fe" : "#e9eefc",
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              borderRadius: 20
-            }}
-          >
-            <Text style={{ color: tab === item ? "#fff" : "#17324d", fontWeight: "600", textTransform: "capitalize" }}>
-              {item}
-            </Text>
-          </TouchableOpacity>
-        ))}
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+
+      {/* Main Content */}
+      <View style={styles.content}>
+        {renderScreen()}
       </View>
 
-      <View style={{ flex: 1 }}>
-        {renderScreen()}
+      {/* Bottom Navigation */}
+      <View style={[styles.navBar, { paddingBottom: insets.bottom }]}>
+        {tabs.map((item) => (
+          <TouchableOpacity
+            key={item.key}
+            onPress={() => setTab(item.key)}
+            style={styles.navItem}
+          >
+            <Text
+              style={[
+                styles.navText,
+                tab === item.key && styles.activeText
+              ]}
+            >
+              {item.label}
+            </Text>
+
+            {tab === item.key && <View style={styles.activeIndicator} />}
+          </TouchableOpacity>
+        ))}
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f7f9fc"
+  },
+
+  content: {
+    flex: 1,
+    padding: 10
+  },
+
+  navBar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingTop: 10,
+    backgroundColor: "#ffffff",
+    borderTopWidth: 1,
+    borderColor: "#e0e0e0",
+    elevation: 10
+  },
+
+  navItem: {
+    alignItems: "center"
+  },
+
+  navText: {
+    color: "#777",
+    fontSize: 13,
+    fontWeight: "500"
+  },
+
+  activeText: {
+    color: "#0f62fe",
+    fontWeight: "700"
+  },
+
+  activeIndicator: {
+    marginTop: 4,
+    height: 3,
+    width: 20,
+    backgroundColor: "#0f62fe",
+    borderRadius: 2
+  }
+});

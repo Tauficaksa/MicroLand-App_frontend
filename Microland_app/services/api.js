@@ -1,4 +1,4 @@
-const BASE_URL = "http://YOUR_LOCAL_IP:5000/api";
+const BASE_URL = "http://10.123.42.172:5000/api";
 const USER_ID = 1;
 
 async function request(path, options = {}) {
